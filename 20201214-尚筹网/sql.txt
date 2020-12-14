@@ -1,0 +1,82 @@
+CREATE DATABASE `project_crowd` CHARACTER SET utf8;
+
+use project_crowd;
+drop table if exists t_admin;
+create table t_admin
+(
+id int not null auto_increment, # 主键
+login_acct varchar(255) not null, # 登录账号
+user_pswd char(32) not null, # 登录密码
+user_name varchar(255) not null, # 昵称
+email varchar(255) not null, # 邮件地址
+create_time char(19), # 创建时间
+primary key (id)
+);
+
+CREATE TABLE `project_crowd`.`t_role` ( `id` INT NOT NULL, `name` CHAR(100), PRIMARY KEY
+(`id`) );
+ALTER TABLE `project_crowd`.`t_role` CHANGE `id` `id` INT(11) NOT NULL AUTO_INCREMENT;
+
+create table t_menu
+(
+id int(11) not null auto_increment, pid int(11), name varchar(200), url varchar(200),
+icon varchar(200), primary key (id)
+);
+
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('1',NULL,'系统权限菜单','glyphicon
+glyphicon-th-list',NULL);
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('2','1',' 控 制 面 板 ','glyphicon
+glyphicon-dashboard','main.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('3','1','权限管理','glyphicon glyphicon
+glyphicon-tasks',NULL);
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('4','3',' 用 户 维 护 ','glyphicon
+glyphicon-user','user/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('5','3',' 角 色 维 护 ','glyphicon
+glyphicon-king','role/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('6','3',' 菜 单 维 护 ','glyphicon
+glyphicon-lock','permission/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('7','1',' 业 务 审 核 ','glyphicon
+glyphicon-ok',NULL);
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('8','7',' 实 名 认 证 审 核 ','glyphicon
+glyphicon-check','auth_cert/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('9','7',' 广 告 审 核 ','glyphicon
+glyphicon-check','auth_adv/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('10','7',' 项 目 审 核 ','glyphicon
+glyphicon-check','auth_project/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('11','1',' 业 务 管 理 ','glyphicon
+glyphicon-th-large',NULL);
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('12','11',' 资 质 维 护 ','glyphicon
+glyphicon-picture','cert/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('13','11',' 分 类 管 理 ','glyphicon
+glyphicon-equalizer','certtype/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('14','11',' 流 程 管 理 ','glyphicon
+glyphicon-random','process/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('15','11',' 广 告 管 理 ','glyphicon
+glyphicon-hdd','advert/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('16','11',' 消 息 模 板 ','glyphicon
+glyphicon-comment','message/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('17','11',' 项 目 分 类 ','glyphicon
+glyphicon-list','projectType/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('18','11',' 项 目 标 签 ','glyphicon
+glyphicon-tags','tag/index.htm');
+insert into `t_menu` (`id`, `pid`, `name`, `icon`, `url`) values('19','1',' 参 数 管 理 ','glyphicon
+glyphicon-list-alt','param/index.htm');
+
+CREATE TABLE `project_crowd`.`inner_admin_role` ( `id` INT NOT NULL AUTO_INCREMENT, `admin_id` INT, `role_id` INT, PRIMARY KEY (`id`) );
+
+CREATE TABLE `t_auth` ( `id` int(11) NOT NULL AUTO_INCREMENT, `name` varchar(200) DEFAULT NULL,
+`title` varchar(200) DEFAULT NULL,
+`category_id` int(11) DEFAULT NULL, PRIMARY KEY (`id`)
+);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(1,'','用户模块',NULL); INSERT INTO t_auth(id,`name`,title,category_id) VALUES(2,'user:delete','删除',1); INSERT INTO t_auth(id,`name`,title,category_id) VALUES(3,'user:get','查询',1); INSERT INTO t_auth(id,`name`,title,category_id) VALUES(4,'','角色模块',NULL); INSERT INTO t_auth(id,`name`,title,category_id) VALUES(5,'role:delete','删除',4); INSERT INTO t_auth(id,`name`,title,category_id) VALUES(6,'role:get','查询',4);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(7,'role:add','新增',4);
+
+CREATE TABLE `project_crowd`.`inner_role_auth` ( `id` INT NOT NULL AUTO_INCREMENT, `role_id` INT, `auth_id` INT, PRIMARY KEY ( `id` ) );
+
+CREATE DATABASE `security` CHARACTER SET utf8;
+
+create table t_admin
+(
+id int not null auto_increment,
+loginacct varchar(255) not null, userpswd char(32) not null, username varchar(255) not null, email varchar(255) not null, createtime char(19), primary key (id)
+);
