@@ -259,19 +259,102 @@ spring:
 创建测试的html
 
 ```html
-<h1 th:text="这是服务器打开的文件显示的内容，嘻嘻。">这是直接打开文件显示的内容</h1>
+<!-- 服务器解析thymeleaf代码时，会读取tx:text属性的值，用这个值替换原本标签体的值 -->
+	<h1 th:text="这是服务器打开的文件显示的内容，嘻嘻。">这是直接打开文件显示的内容</h1>
+	
+	<h3>访问请求域</h3>
+	<p th:text="${app}">AAA</p>
+	或
+	<p th:text="${#httpServletRequest.getAttribute('attrRequestScope')}">AAA</p>
+	<h3>访问会话域</h3>
+	<p th:text="${session.app}">AAA</p>
+	<h3>访问应用域</h3>
+	<p th:text="${application.app}">AAA</p>
 ```
 
 创建Controller
 
 ```java
-@Controller
-public class Hello {
-	@RequestMapping("/test/thymeleaf")
-	public String HelloTest() {
-		return "hello";
-	}
-}
+<body>
+	<!-- 1、服务器解析thymeleaf代码时，会读取tx:text属性的值，用这个值替换原本标签体的值 -->
+	<h1 th:text="这是服务器打开的文件显示的内容，嘻嘻。">这是直接打开文件显示的内容</h1>
+	
+	<!-- 2、在表达式中访问属性域 -->
+	<h3>访问请求域</h3>
+	<p th:text="${app}">AAA</p>
+	或
+	<p th:text="${#httpServletRequest.getAttribute('attrRequestScope')}">AAA</p>
+	<h3>访问会话域</h3>
+	<p th:text="${session.app}">AAA</p>
+	<h3>访问应用域</h3>
+	<p th:text="${application.app}">AAA</p>
+	
+	<!-- 3、解析得到contextPath
+		配置文件不写的话是空的，所以要先在配置文件配置 -->
+	<p th:text="@{/aa/bb/cc}">@{} 的作用是获取contextPath的值，加在相对路径前面</p>
+	
+	<!-- 4、判断 if -->
+	<p th:if="${not #strings.isEmpty(app)}">有值</p>
+	<p th:if="${#strings.isEmpty(app)}">值为空</p>
+	
+	<!-- 5、遍历 each -->
+	<p>遍历情况1</p>
+	<p th:text="${wala}" th:each="wala:${list}">AAA</p>
+	<p>遍历情况2</p>
+	<div th:each="bb:${list}">
+		<p th:text="${bb}">AAA</p>
+	</div>
+	<!-- 6、包含 -->
+	<!-- 有三种方式 
+		::左边，和配置文件里的属性拼接之后可以访问到被包含的文件
+		::右边，要插入被包含文件里的哪一部分-->
+	<!-- 6.1插入 -->
+	<div style="background-color: red" th:insert="~{../include/papa::Frist}">AAAA</div>
+	<!-- 6.2替代 -->
+	<div style="background-color: red" th:replace="~{../include/papa::Second}">AAAA</div>
+	<!-- 6.3包含 -->
+	<div style="background-color: red" th:include="~{../include/papa::Third}">AAAA</div>
+</body>
+```
+
+```yaml
+server:
+  servlet:
+    context-path: /chen
+    #配置了这个之后地址栏端口号后面就要加上这个了
+```
+
+```html
+<body>
+	<div style="background-color: graytext;" th:fragment="Frist">
+		<p>我是第一</p>
+	</div>
+	<div style="background-color: graytext;" th:fragment="Second">
+		<p>我是第二</p>
+	</div>
+	<div style="background-color: graytext;" th:fragment="Third">
+		<p>我是第三</p>
+	</div>
+</body>
+```
+
+区别看一下的服务器解析后的网页：
+
+```html
+<!-- 6.1插入 -->
+<div style="background-color: red">
+    <div style="background-color: graytext;">
+	<p>我是第一</p>
+	</div>
+</div>
+<!-- 6.2替代 -->
+<div style="background-color: graytext;">
+	<p>我是第二</p>
+</div>
+<!-- 6.3包含 -->
+<div style="background-color: red">
+	<p>我是第三</p>
+</div>
 ```
 
 文件位置如图：
