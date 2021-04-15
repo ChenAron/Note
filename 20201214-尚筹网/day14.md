@@ -572,7 +572,7 @@ ResultEntity<String> saveMemberRemote(@RequestBody MemberPo mpo);
 
 #### 3.3.2 工程10-mysql里面
 
-实现api暴露的接口
+实现api暴露的接口，记得加@RequestBody,不然收不到数据，后面的mysql工程中也要加
 
 **Controller**
 
@@ -608,6 +608,7 @@ public class memberProviderController {
 	@RequestMapping("save/member/remote")
 	ResultEntity<String> saveMemberRemote(
         	//这个@RequestBody一定要加，不然接收不到数据
+        	//后面有专门一节课这个问题
 			@RequestBody MemberPo mpo){
 		try {
 			System.out.println("controller收到的PO"+mpo.toString()+"===");
@@ -895,4 +896,139 @@ public class CrowdConstant {
 
 
 
-**完成-END**
+
+
+# 会员登录
+
+## 1. 准备
+
+**1.1 修改登录页面**
+
+```html
+<!--
+引入模板
+base
+修改登录按钮为submit
+增加消息提示区域
+记得改name 
+-->
+< xmlns:th="http://www.thymeleaf.org" >
+    
+<base th:href="@{/}"/>
+    
+<p th:text="${message}">这里显示登录失败的提示消息</p>
+    
+<div class="checkbox" style="text-align:right;">
+    <a href="reg.html" th:href="@{/auth/member/to/reg/page}">我要注册</a>
+</div>
+    
+<button type="submit" class="btn btn-lg btn-success btn-block" href="member.html" th:href="@{/auth/member/to/login/page}"> 登录</button>
+```
+
+## 2. 目标与思路
+
+**目标：**检查账号密码正确后将用户信息存入Session，表示用户已登录
+
+**思路：**
+
+<img src="md-img/2021-01-06_10-21-20.png" alt="icon" style="zoom:60%;" />
+
+## 3. 代码
+
+### 3.1 创建MemberLoginVo
+
+```java
+private Integer id;
+private String loginacct;
+private String email;
+```
+
+### 3.2 写consumer的Controller
+
+```java
+Logger logger = LoggerFactory.getLogger(MemberController.class);
+	//退出系统
+	@RequestMapping("/auth/member/do/logout")
+	public String memberLogout(HttpSession s) {
+		s.invalidate();
+		return "redirect:/";
+	}
+	//用户点击登录按钮
+	@RequestMapping("/auth/member/do/login")
+	public String memberLogin(
+			ModelMap mm,
+			@RequestParam("loginacct")String loginacct,
+			@RequestParam("usrpsw")String upsw,
+			HttpSession session
+			) {
+		//1.先获取账户名，看查不查得到
+		ResultEntity<MemberPo> sqlReault = mysqlrs.getMemberByLoginRemote(loginacct);
+		String result = sqlReault.getResult();
+		
+		if(result.equals(ResultEntity.FAILED)) {
+			String message = sqlReault.getMessage();
+			mm.addAttribute(CrowdConstant.ATTR_NAME_MESSAGE, message);
+			return "member-login";
+		}
+		
+		MemberPo po = sqlReault.getData();
+		if(po==null) {
+			mm.addAttribute(CrowdConstant.ATTR_NAME_MESSAGE,CrowdConstant.MESSAGE_LOGIN_FAILED);
+			return "member-login";
+		}
+		logger.info("获取到的对象数据："+po.toString());
+		//2.都查得到，那就验证密码
+		//从数据库获取密码
+		String sqlPswd = po.getUserpswd();
+		//从页面获取的密码,加密
+		BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+		/*错误的方式
+		String encode = bCryptPasswordEncoder.encode(upsw);
+		logger.info("页面加密后的密码是："+encode);
+		*/
+		boolean matches = bCryptPasswordEncoder.matches(upsw, sqlPswd);
+		
+		//对比
+		if(matches==true) {
+			//密码一致
+			//创建Vo对象存入Session域
+			MemberLoginVo loginVo = new MemberLoginVo(po.getId(), po.getLoginacct(), po.getEmail());
+			session.setAttribute(CrowdConstant.ATTR_NAME_LOGIN_MEMBER, loginVo);
+			return "redirect:/auth/member/to/center/page";
+		}else {
+			mm.addAttribute(CrowdConstant.ATTR_NAME_MESSAGE, "密码错误");
+			return "member-login";
+		}
+	}
+```
+
+修改一下调用的service---return null
+
+```java
+if(list.size()==0 || list==null) {
+			//查无,返回null
+			return null;
+		}
+```
+
+### 3.3 修改member-center页面
+
+```html
+<li><a th:href="@{/auth/member/do/logout}"><i class="glyphicon glyphicon-off"></i> 退出系统</a></li>
+[[${session.loginMember.email}]]
+```
+
+配置Web适配器：
+
+```java
+registry.addViewController("/auth/member/to/center/page").setViewName("member-center");
+```
+
+
+
+
+
+**完结-END**
+
+终于可以有笔记了，下面的内容可以回去看配套的笔记了！
+
